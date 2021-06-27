@@ -1,4 +1,4 @@
-from extract_emails import extract_mails
+from extract_transform_emails import extract_mails
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 import os
@@ -30,7 +30,6 @@ def validate_data(df:pd.DataFrame) -> bool:
         print("Removing the duplicated entries!")
         df.sort_values("date", inplace=True)
         df.drop_duplicates(subset=["date"], inplace = True)
-        # raise Exception("One or more Primary Keys are not unique")
    
     if df.isnull().values.any(): 
         raise Exception("Null values found!")
@@ -39,8 +38,6 @@ def validate_data(df:pd.DataFrame) -> bool:
     # check if the email is int the same month 
     today = datetime.datetime.now()
     for timestamp in timestamps:
-        # if datetime.datetime.strptime(str(timestamp), '%Y-%m-%d') != yesterday:
-        # if timestamp < period:
         if timestamp.strftime("%m") != today.strftime('%m'):
             raise Exception("At least one of the emails is not from this month")
 
@@ -119,5 +116,3 @@ def load(mails_df):
     
     connection.close()
     print("Close database successfully")
-
-# generate_excel()
