@@ -55,6 +55,8 @@ def extract_specific_emails(From):
 # extract the amount of money in the activity 
 def find_number(content):
     num = []
+        
+    # find the amount $ 
     if "$" in content: 
         index = content.find("$",0, len(content))
         if index > 0 : 
@@ -87,6 +89,7 @@ def clean(text):
     # clean text for creating a folder
     return "".join(c if c.isalnum() else "_" for c in text)
 
+# get information from email content and header
 def getInfo(content,subject,From,time):
     # get company name, transaction type, amount , details of transaction
     transaction_type, company = categorize(content, From)
@@ -96,7 +99,7 @@ def getInfo(content,subject,From,time):
 
 
 # extract emails 
-def extract_mails():
+def extract_transform_emails():
     mails = []
     # create an IMAP4 class with SSL 
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
@@ -114,7 +117,6 @@ def extract_mails():
     response = response[0].decode('utf-8').split()
     response.reverse()
     response = response[:min(80, len(response))]
-    # print(response)
 
     # for i in range(response, response-N, -1):
     for i in response:
@@ -164,16 +166,13 @@ def extract_mails():
                                 # print text/plain emails and skip attachments
                                 print("Printing the body...")
                                 body = h.handle(body)
-                                print(body)
-                                # print("normalized text", normalize_text(body))
-                                # print('text summary......... ',text_summarization(normalize_text(body)))
+                                # print(body)
                                 
                                 # if text summary is none --> return the subject headline 
                                 mail_info = getInfo(body,subject,From,local_date)
                                 if mail_info['transaction_type'] != "Promotional":
                                     mails.append(mail_info)
 
-                                # print('-------------------')
                             elif "attachment" in content_disposition:
                                 # download attachment
                                 filename = part.get_filename()
@@ -192,14 +191,10 @@ def extract_mails():
                         # extract content type of email
                         content_type = msg.get_content_type()
                         # get the email body
-
                         body = msg.get_payload(decode=True).decode()
-                        # if content_type == "text/plain":
-                        #     # print only text email parts
-                        #     # print(body)
                     if content_type == "text/html":
                         body = h.handle(body)
-                        print(body)
+                        # print( body)
 
                         # if it's HTML, create a new HTML file and open it in browser
                         folder_name = clean(subject)
@@ -230,8 +225,6 @@ def extract_mails():
         dates.append(m['date'])
         description.append(m['description'])
     df = pd.DataFrame({'company':companies, 'transaction_type':transaction_types, 'amount':amount,"description":description, 'date':dates})
-    # print(df)
-    # df.to_csv('./statement.csv')
     
     # close the connection and logout
     mail.close()
